@@ -1,0 +1,158 @@
+\section{形式化与理论}
+
+\paragraph{难度空间与模型性能函数。}
+我们用连续变量 $z\in[0,1]$ 表示基准题目（例如一道题）的难度，较大的值对应较难的题目。对模型 $\theta$，令 $s_\theta(z)\in[0,1]$ 表示其在难度为 $z$ 的题目上的条件期望性能，例如 pass@1。
+  \vspace{-2mm}
+\paragraph{基准分布与分数。}
+设基准 $B=\{x_i\}_{i=1}^n$ 由 $n$ 道题组成，并令
+$z_i\in[0,1]$ 表示题目 $x_i$ 的难度。基准分数为 $S_B(\theta):=\frac{1}{n}\sum_{i=1}^n s_\theta(z_i)$。这一平均隐式地在难度轴上诱导出一个经验测度，
+\[
+\nu_B=\frac{1}{n}\sum_{i=1}^n \delta_{z_i},
+\]
+其中 $\delta_z$ 表示位于难度 $z$ 处的点质量。在这一表示下，基准分数恰好是关于基准所诱导难度测度的积分，$S_B(\theta)=\int s_\theta(z)\,d\nu_B(z)$。
+
+\paragraph{两个模型之间的性能差。}
+对两个模型 $\theta$ 与 $\theta'$，定义\emph{难度条件下的性能差}为 $\Delta(z):=s_{\theta'}(z)-s_\theta(z)$，为记号简便，省略 $\Delta$ 对 $(\theta',\theta)$ 的依赖。\textit{在基准 $B$ 上观测到的}性能差为
+\[
+D_B(\theta',\theta)
+:= S_B(\theta')-S_B(\theta)
+= \frac{1}{n}\sum_{i=1}^n \Delta(z_i)
+= \int \Delta(z)\,d\nu_B(z).
+\]
+
+\subsection{测度失配}
+\paragraph{基准诱导的耦合。}
+量 $D_B(\theta',\theta)$ 隐式地耦合了两个不同对象：\textit{依赖模型的函数} $\Delta(z)$ 与\textit{依赖基准的测度} $\nu_B$。因此，排行榜比较并非仅由模型之间难度条件下的性能差决定；它还取决于基准如何在难度轴上分配质量。若这一分配不同于我们关心的难度分布，基准就会在失配的测度下聚合同一模型差异。这种失配可能扭曲观测到的模型差距，在严重情形下还会改变所诱导的排序。
+
+\paragraph{目标分布。}
+形式上，我们引入目标分布
+$
+\mu \in \mathcal{P}([0,1]),
+$
+它表示难度空间上预期的评测分布。该目标分布可以编码期望的应用组合。在 $\mu$ 下，模型 $\theta$ 的目标分数以及 $\theta'$ 与 $\theta$ 之间的目标性能差定义为
+\[
+S_\mu(\theta)
+:=
+\int s_\theta(z)\, d\mu(z),
+\qquad
+D_\mu(\theta',\theta)
+:=
+S_\mu(\theta') - S_\mu(\theta)
+=
+\int \Delta(z)\, d\mu(z).
+\]
+
+$D_B(\theta',\theta)$ 与 $D_\mu(\theta',\theta)$ 之间的差异来自基准测度 $\nu_B$ 与目标分布 $\mu$ 的失配。这一观点使我们可以把排行榜比较中的扭曲作为分布失配问题来研究。
+
+\paragraph{分布失配的度量。}
+我们用 1-Wasserstein 距离衡量基准的难度分布与目标难度分布的匹配程度。具体地，对经验难度测度为 $\nu_B$ 的基准 \(B\) 以及 \([0,1]\) 上的目标分布 \(\mu\)，我们将其\emph{难度分布失配（Difficulty Distribution Mismatch, DDM）}定义为
+\[
+\mathrm{DDM}(B;\mu) := W_1(\nu_B,\mu)
+=
+\inf_{\pi \in \Pi(\nu_B,\mu)}
+\int_{[0,1]^2} |u-v|\, d\pi(u,v),
+\]
+其中 $\Pi(\nu_B,\mu)$ 表示 $\nu_B$ 与 $\mu$ 的所有耦合构成的集合。直观上，$W_1(\nu_B,\mu)$ 衡量要把基准难度分布变换成目标分布，需要搬运多少概率质量、以及搬运多远。下面的定理表明，这种失配直接控制基于基准与基于目标的性能差之间的扭曲。
+
+
+
+\begin{theorem}[分布失配控制分数扭曲与排名稳定性]
+\label{thm:w1_rank_stability}
+设性能差函数 $\Delta$ 是 $L$-Lipschitz 的。则
+\[
+\bigl|D_B(\theta',\theta) - D_\mu(\theta',\theta)\bigr|
+\le
+L\, W_1(\nu_B,\mu).
+\]
+因此，若 $|D_\mu(\theta',\theta)| > L\, W_1(\nu_B,\mu)$，则
+\[
+\operatorname{sign}\bigl(D_B(\theta',\theta)\bigr)
+=
+\operatorname{sign}\bigl(D_\mu(\theta',\theta)\bigr),
+\]
+从而基准所诱导的排序与目标排序一致，即不会发生排名翻转。
+\end{theorem}
+
+
+
+定理~\ref{thm:w1_rank_stability} 表明，$W_1(\nu_B,\mu)$ 界定了基准所诱导的分数差与目标分数差之间可以相差多少。较小的 $W_1(\nu_B,\mu)$ 意味着基准是目标评测的忠实近似，而较大的 $W_1(\nu_B,\mu)$ 表明基准可能过度强调某些难度区域、同时低估另一些区域，从而可能扭曲模型比较，甚至改变其诱导排名。附录~\ref{sec:app_proof_mismatch} 给出完整证明，并将该结果推广到有限样本设定。
+
+
+
+\paragraph{无先验信息时有原则的目标分布。}
+当已有先验信息时，自然应选择 $\mu$ 以反映难度空间上预期的评测目标。然而在许多设定中，此类先验知识不可得。此时，选择非均匀目标会在没有证据的情况下隐含地偏袒某些难度区域。为刻画一个有原则的默认选择，我们考虑一种不可知设定：性能差沿难度轴出现的位置完全未知。我们考虑函数类
+\[
+\mathcal{F}_{\rho}
+:=
+\left\{
+\Delta:[0,1]\to[-1,1]\ \text{可测} :
+\int_0^1 \Delta(z)\,dz = \rho
+\right\},
+\qquad \rho\in(-1,1).
+\]
+该类编码一个不确定性集合：带符号的性能差在难度轴上具有固定的平均水平 $\rho$，但其位置除此之外不受限制。
+
+对任意候选目标分布 $\mu \in \mathcal P([0,1])$，定义其最坏情形保留差为
+\[
+V_{\rho}(\mu)
+:=
+\inf_{\Delta \in \mathcal{F}_{\rho}}
+\int \Delta(z)\, d\mu(z).
+\]
+下面的定理表明，当对性能差沿难度轴出现的位置完全不确定时，均匀分布是\textit{唯一}的极大极小（maximin）目标，并且是唯一使最坏情形保留差仍等于平均差 $\rho$ 的选择。
+
+\begin{theorem}[均匀目标是唯一的极大极小选择]
+\label{thm:uniform_maximin}
+对 $\rho \in (-1,1)$，我们有
+\[
+\sup_{\mu \in \mathcal P([0,1])} V_{\rho}(\mu) = \rho,
+\]
+且唯一的最大化子是均匀分布 $\lambda=\mathrm{Unif}[0,1]$。
+\end{theorem}
+定理~\ref{thm:uniform_maximin} 并不声称均匀分布在一切情形下都最优。它只是在难度空间上没有先验信息时，为把均匀分布作为有原则的默认目标提供依据。此时，采用均匀目标避免了对难度区域引入额外偏好，并为基准评测提供一条中性准则：评测并不先验地偏袒任何难度区域。完整证明见附录~\ref{sec:app_proof_mismatch}。
+
+
+\subsection{覆盖缺口}
+
+\paragraph{离散的基准测度可能无法监测局部训练改进。}
+基准不仅常用于最终的模型比较，也用于监测训练进展~\citep{he2025skywork,yu2025dapo,luo2025deepscaler}。然而，训练改进往往是局部的而非均匀的：模型可能在某一特定难度范围内大幅提升，而在其他地方仅有适度改进。
+
+回想基准分数是关于基准经验测度 $\nu_B$ 的积分。由于 $\nu_B$ 是\textit{离散}测度，仅支撑在有限个基准难度点上，它对每一个不含基准题目的区间都赋予零质量。因此，即使模型在一段非平凡的连续难度区域上有显著改进，只要该区域不含基准题目，基准分数也可能反映不出这一改进。在这个意义上，当局部分辨率不足时，基准作为进展监测器会失效。
+
+% This raises a natural question: when a model improves over a contiguous difficulty region, under what conditions can a benchmark detect that improvement? To study this, we first characterize the local resolution of a benchmark through its \emph{maximum gap}.
+
+% This motivates the following question: when a model improves on a contiguous region of the difficulty axis, under what conditions is that improvement statistically detectable from benchmark evaluations? To formalize this question, we first characterize the local resolution of a benchmark through its \emph{maximum gap}, which measures the largest uncovered region of the difficulty axis. We then study statistical detectability through a hypothesis testing framework, where the null hypothesis corresponds to no performance change and the alternative corresponds to a localized improvement of a given width and magnitude.
+
+\paragraph{最大间隔。}
+我们首先用\emph{最大间隔}刻画基准的局部分辨率。令 $0 \le z_{(1)} \le \cdots \le z_{(n)} \le 1$ 为有序的基准难度点，并定义 $z_{(0)}:=0$ 与 $z_{(n+1)}:=1$。基准 $B$ 的\emph{最大间隔}为
+\begin{equation}
+G(B):=\max_{0\le j\le n}\bigl(z_{(j+1)}-z_{(j)}\bigr)
+\label{eq:max_gap}
+\end{equation}
+即难度轴上不含任何基准点的最大区间的长度。
+
+\paragraph{假设检验表述。}
+为形式化基准能否可靠检测局部训练改进，我们将该问题表述为假设检验。在原假设下没有改进。在备择假设下，改进后的性能在某个宽度为 $w$ 的连续难度区间上，至少比改进前高出 $a$。下面的定理表明，基准最大间隔 $G(B)$ 正是精确的渐近极小极大检测边界。
+
+\begin{theorem}[最大间隔作为精确的渐近极小极大检测边界]
+\label{thm:max-gap-detection-boundary}
+固定检验水平 $\alpha\in(0,1)$ 与 $a\in(0,1]$。令 $s^-,s^+:[0,1]\to[0,1]$ 分别表示改进前与改进后的性能曲线。对基准 $B$，令 $\Pi_\alpha^*(B;w,a,k)$ 表示：基于每道基准题 $k$ 次重复样本、用于检验
+\[
+H_0:\ s^-=s^+
+\qquad\text{对}\qquad
+H_1:\ \exists\ \text{区间 } I\subset[0,1],\ |I|=w,\  s^+(z)-s^-(z)\ge a\ \ \forall z\in I.
+\]
+的水平 $\alpha$ 检验的极小极大最坏情形功效。
+\begin{enumerate}
+    \item 若 $w \le G(B)$，则对每个 $k\in\mathbb N$，有 $\Pi_\alpha^*(B;w,a,k)=\alpha$。
+    \item 若 $w > G(B)$，则 $\lim_{k\to\infty}\Pi_\alpha^*(B;w,a,k)=1$。
+\end{enumerate}
+因此，$G(B)$ 精确刻画了基准 $B$ 的渐近极小极大检测边界。
+\end{theorem}
+
+
+
+
+定理~\ref{thm:max-gap-detection-boundary} 表明，基准的离散几何诱导出一个尖锐的可检测性相变。若局部改进的宽度不超过相邻难度点的最大间隔，则无论重复评测多少次，任何水平 $\alpha$ 的检验都无法取得非平凡的最坏情形功效。换言之，在最坏情形下，这样的改进对基准可以完全不可见。一旦改进宽度超过最大间隔，重复评测最终可以使该信号可检测。在这个意义上，$G(B)$ 刻画了基准 $B$ 固有的局部分辨率极限。
+完整证明见附录~\ref{sec:app_proof_missed}。
+% The full proof along with two additional geometric interpretations of the maximum gap are given in App.~\ref{sec:app_proof_missed}: a deterministic lower bound on benchmark response to a localized improvement, and a random-location formula for complete-miss probability.
